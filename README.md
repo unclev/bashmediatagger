@@ -1,77 +1,61 @@
 Bash Media Tagger
 ===
+
 ## Workflow
-0. Your music collection is expected to be in the following format (from the collection root folder): 
-  ```
-  ArtistName/Year Album/TrackNum Title.ext
-  ``` 
-  The current version dies not support alternative paths - issue #1. For such cases you should modify the regex in settags.sh
 1. Install [mutagen](https://github.com/quodlibet/mutagen) (under ubuntu install python-mutagen) 
   ```
   sudo apt install python-mutagen
   ```
-2. Puth settags.sh into your collection root, or part of your collection copyied there for processing.
-3. Find media files and launch settags.sh for each one: 
+2. Puth *settags.sh* and *regextest.sh* into your collection root, or part of your collection copyied there for processing.
+3. Test the parameters you are going to pass *settags.sh* with *regextest.sh*
+  Eg: 
   ```sh
-  find ArtistName -type f -name *.ext -print -exec ./settags.sh "{}" \;
+  find ./Cyborgjeff -type f -iname 01*.mp3 -print \
+    -exec ./regextest.sh "[/](.*)/([0-9]{4}) (.*)/([0-9]{2}) (.*)\.mp3$" TPE1,TYER,TALB,TRCK,TIT2 "{}" \;
   ```
-  ## What it does
-  For each media file it
+  this returns:
+  ```
+  ./Cyborgjeff/2008 Goddess in my Hand/01 Je suis Plug & Play.mp3
+	  /Cyborgjeff/2008 Goddess in my Hand/01 Je suis Plug & Play.mp3
+  TPE1	Cyborgjeff
+  TYER	2008
+  TALB	Goddess in my Hand
+  TRCK	01
+  TIT2	Je suis Plug & Play
+```
+4. Find media files and launch settags.sh for each one: 
+  ```sh
+  find Cyborgjeff -type f -name *.mp3 -print \
+  -exec ./settags.sh \
+    "[/]regex string.mp3$" \
+    comma,separted,list,of,frames,corresponding,to,the,regex \
+    "{}" additional mid3v2 parameters \;
+  ```
+
+## What it does
+  For each media file that matches the regex it
   1. Convert id3v1 tags into id3v2 tags.
   2. Clears id3v1 tags.
-  3. Sets Artist, Year, Album, Num, Title
-  4. Lists set tags. 
+  3. Set each frame to the corresponding regex group.
+  4. Lists set frames.
+
 ## Example
 ```sh
-find Cyborgjeff -type f -name *.mp3 -print -exec ./settags.sh "{}" \;
+find ./Cyborgjeff -type f -iname 01*.mp3 -print \
+  -exec ./settags.sh \
+    "[/](.*)/([0-9]{4}) (.*)/([0-9]{2}) (.*)\.mp3$" \
+    TPE1,TYER,TALB,TRCK,TIT2 \
+  "{}" --COMM "test manually" \;
 ```
-results:
+the result:
 ```
-Cyborgjeff/2008 Goddess in my Hand/04 Goddess in my Hands.mp3
-IDv2 tag info for Cyborgjeff/2008 Goddess in my Hand/04 Goddess in my Hands.mp3 
-APIC= (image/jpeg, 46625 bytes)
-COMM==eng=http://www.jamendo.com Attribution-Noncommercial-Share Alike 3.0
-COMM=ID3 v1 Comment=eng=Attribution-Noncommercial-Shar
+./Cyborgjeff/2008 Goddess in my Hand/01 Je suis Plug & Play.mp3
+IDv2 tag info for ./Cyborgjeff/2008 Goddess in my Hand/01 Je suis Plug & Play.mp3 
+COMM==eng=test manually
 TALB=Goddess in my Hand
-TCON=Dance
-TCOP=2008-06-03T15:50:01+01:00 Cyborgjeff. Licensed to the public under http://creativecommons.org/licenses/by-nc-sa/3.0/ verify at http://www.jamendo.comalbum/26091/
-TDRC=2008
-TDRL=2008
-TDTG=2012-08-13 09:43:26
-TENC=Jamendo : http://www.jamendo.com | LAME
-TIT2=Goddess in my Hands
+TIT2=Je suis Plug & Play
 TPE1=Cyborgjeff
-TPUB=Jamendo
-TRCK=04
-WCOM=http://www.jamendo.com
-WCOP=http://creativecommons.org/licenses/by-nc-sa/3.0/
-WOAF=http://www.jamendo.com/en/track/176091
-WOAR=http://www.jamendo.com/en/artist/cyborgjeff
-WOAS=http://www.jamendo.com/en/album/26091
-WPUB=http://www.jamendo.com 
-Cyborgjeff/2008 Goddess in my Hand/01 Je suis Plug & Play.mp3
-[...]
-WPUB=http://www.jamendo.com 
-Cyborgjeff/2008 Goddess in my Hand/02 What is love (kryptonic 2008 no vocal for Jamendo).mp3
-IDv2 tag info for Cyborgjeff/2008 Goddess in my Hand/02 What is love (kryptonic 2008 no vocal for Jamendo).mp3 
-APIC= (image/jpeg, 46625 bytes)
-COMM==eng=http://www.jamendo.com Attribution-Noncommercial-Share Alike 3.0
-COMM=ID3 v1 Comment=eng=Attribution-Noncommercial-Shar
-TALB=Goddess in my Hand
-TCON=Unknown
-TCOP=2008-06-03T15:50:01+01:00 Cyborgjeff. Licensed to the public under http://creativecommons.org/licenses/by-nc-sa/3.0/ verify at http://www.jamendo.comalbum/26091/
-TDRC=2008
-TDRL=2008
-TDTG=2012-01-10 07:49:56
-TENC=Jamendo : http://www.jamendo.com | LAME
-TIT2=What is love (kryptonic 2008 no vocal for Jamendo)
-TPE1=Cyborgjeff
-TPUB=Jamendo
-TRCK=02
-WCOM=http://www.jamendo.com
-WCOP=http://creativecommons.org/licenses/by-nc-sa/3.0/
-WOAF=http://www.jamendo.com/en/track/176093
-WOAR=http://www.jamendo.com/en/artist/cyborgjeff
-WOAS=http://www.jamendo.com/en/album/26091
-WPUB=http://www.jamendo.com 
+TRCK=01
+TYER=2008 
 ```
+
